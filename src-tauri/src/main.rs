@@ -64,7 +64,7 @@ fn get_credential(service: String, key: String) -> CredentialResponse {
             error: None,
         },
         Err(e) => {
-            if e == keyring::Error::NoEntry {
+            if matches!(e, keyring::Error::NoEntry) {
                 CredentialResponse {
                     success: true,
                     value: None,
@@ -101,7 +101,7 @@ fn delete_credential(service: String, key: String) -> CredentialResponse {
             error: None,
         },
         Err(e) => {
-            if e == keyring::Error::NoEntry {
+            if matches!(e, keyring::Error::NoEntry) {
                 CredentialResponse {
                     success: true,
                     value: None,
@@ -138,7 +138,7 @@ fn has_credential(service: String, key: String) -> CredentialResponse {
             error: None,
         },
         Err(e) => {
-            if e == keyring::Error::NoEntry {
+            if matches!(e, keyring::Error::NoEntry) {
                 CredentialResponse {
                     success: true,
                     value: Some("false".to_string()),
