@@ -86,7 +86,7 @@ export interface AppSettings {
   notifications: boolean;
 }
 
-export type PageId = 'dashboard' | 'create' | 'projects' | 'library' | 'batch' | 'history' | 'settings';
+export type PageId = 'dashboard' | 'create' | 'projects' | 'library' | 'batch' | 'history' | 'settings' | 'diagnostics';
 
 export interface Command {
   id: string;

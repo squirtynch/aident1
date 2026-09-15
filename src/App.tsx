@@ -12,6 +12,7 @@ import { CreatePage, HistoryPage } from './pages/PlaceholderPages';
 import { LibraryPage } from './pages/LibraryPage';
 import { BatchPage } from './pages/BatchPage';
 import { TestRunnerPage } from './pages/TestRunner';
+import { DiagnosticsPage } from './pages/DiagnosticsPage';
 import { CreateProjectDialog } from './components/CreateProjectDialog';
 import { themeManager } from './lib/theme';
 import { commandRegistry } from './lib/commands';
@@ -115,6 +116,14 @@ function App() {
       category: 'Development',
       action: () => { setCurrentPage('history'); /* Using history page slot for tests */ },
     });
+
+    commandRegistry.register({
+      id: 'open-diagnostics',
+      label: 'Open Diagnostics',
+      description: 'Run system diagnostics',
+      category: 'Development',
+      action: () => { setCurrentPage('diagnostics'); setSelectedProjectId(null); },
+    });
   }, []);
 
   // Keyboard shortcuts
@@ -206,6 +215,7 @@ function App() {
       case 'batch': return 'Batch';
       case 'history': return 'History';
       case 'settings': return 'Settings';
+      case 'diagnostics': return 'Diagnostics';
       default: return 'AI Product Studio';
     }
   };
@@ -243,6 +253,8 @@ function App() {
         return <HistoryPage />;
       case 'settings':
         return <Settings />;
+      case 'diagnostics':
+        return <DiagnosticsPage />;
       default:
         return <Dashboard onNavigate={handleNavigate} />;
     }
