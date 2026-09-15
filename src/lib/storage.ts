@@ -100,3 +100,93 @@ export function saveSettings(settings: Partial<AppSettings>) {
 export function getStoragePaths(): StoragePaths {
   return DEFAULT_STORAGE_PATHS;
 }
+
+// Generations
+const GENERATIONS_KEY = 'ai-studio-generations';
+const GENERATION_VERSIONS_KEY = 'ai-studio-generation-versions';
+const AI_TEXT_RESULTS_KEY = 'ai-studio-ai-text-results';
+
+export function getGenerations(projectId?: string): import('./contracts').Generation[] {
+  const data = localStorage.getItem(GENERATIONS_KEY);
+  const generations: import('./contracts').Generation[] = data ? JSON.parse(data) : [];
+  if (projectId) {
+    return generations.filter(g => g.projectId === projectId);
+  }
+  return generations;
+}
+
+export function saveGenerations(generations: import('./contracts').Generation[]) {
+  localStorage.setItem(GENERATIONS_KEY, JSON.stringify(generations));
+}
+
+export function addGeneration(generation: import('./contracts').Generation) {
+  const generations = getGenerations();
+  generations.unshift(generation);
+  saveGenerations(generations);
+}
+
+export function updateGeneration(id: string, updates: Partial<import('./contracts').Generation>) {
+  const generations = getGenerations();
+  const index = generations.findIndex(g => g.id === id);
+  if (index !== -1) {
+    generations[index] = { ...generations[index], ...updates, updatedAt: new Date().toISOString() };
+    saveGenerations(generations);
+  }
+}
+
+export function deleteGeneration(id: string) {
+  const generations = getGenerations().filter(g => g.id !== id);
+  saveGenerations(generations);
+}
+
+// Generation Versions
+export function getGenerationVersions(generationId?: string): import('./contracts').GenerationVersion[] {
+  const data = localStorage.getItem(GENERATION_VERSIONS_KEY);
+  const versions: import('./contracts').GenerationVersion[] = data ? JSON.parse(data) : [];
+  if (generationId) {
+    return versions.filter(v => v.generationId === generationId);
+  }
+  return versions;
+}
+
+export function saveGenerationVersions(versions: import('./contracts').GenerationVersion[]) {
+  localStorage.setItem(GENERATION_VERSIONS_KEY, JSON.stringify(versions));
+}
+
+export function addGenerationVersion(version: import('./contracts').GenerationVersion) {
+  const versions = getGenerationVersions();
+  versions.push(version);
+  saveGenerationVersions(versions);
+}
+
+// AI Text Results
+export function getAITextResults(projectId?: string): import('./contracts').AITextResult[] {
+  const data = localStorage.getItem(AI_TEXT_RESULTS_KEY);
+  const results: import('./contracts').AITextResult[] = data ? JSON.parse(data) : [];
+  return results;
+}
+
+export function saveAITextResult(result: import('./contracts').AITextResult) {
+  const results = getAITextResults();
+  results.unshift(result);
+  localStorage.setItem(AI_TEXT_RESULTS_KEY, JSON.stringify(results));
+}
+
+// AI Settings
+const AI_SETTINGS_KEY = 'ai-studio-ai-settings';
+
+export function getAISettings(): import('./contracts').ProviderConfig {
+  const data = localStorage.getItem(AI_SETTINGS_KEY);
+  return data ? JSON.parse(data) : {
+    provider: 'openrouter',
+    defaultModel: 'openai/gpt-4o-mini',
+    textModel: 'openai/gpt-4o-mini',
+    visionModel: 'openai/gpt-4o',
+    imageModel: 'openai/dall-e-3',
+    imageEditModel: 'openai/dall-e-2',
+  };
+}
+
+export function saveAISettings(settings: import('./contracts').ProviderConfig) {
+  localStorage.setItem(AI_SETTINGS_KEY, JSON.stringify(settings));
+}

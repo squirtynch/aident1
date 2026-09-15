@@ -9,6 +9,7 @@ import { Projects } from './pages/Projects';
 import { ProjectView } from './pages/ProjectView';
 import { Settings } from './pages/Settings';
 import { CreatePage, LibraryPage, BatchPage, HistoryPage } from './pages/PlaceholderPages';
+import { TestRunnerPage } from './pages/TestRunner';
 import { CreateProjectDialog } from './components/CreateProjectDialog';
 import { themeManager } from './lib/theme';
 import { commandRegistry } from './lib/commands';
@@ -103,6 +104,14 @@ function App() {
       description: 'Go to dashboard',
       category: 'Navigation',
       action: () => { setCurrentPage('dashboard'); setSelectedProjectId(null); },
+    });
+
+    commandRegistry.register({
+      id: 'run-tests',
+      label: 'Run AI Engine Tests',
+      description: 'Execute the test suite',
+      category: 'Development',
+      action: () => { setCurrentPage('history'); /* Using history page slot for tests */ },
     });
   }, []);
 

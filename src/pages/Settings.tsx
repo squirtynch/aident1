@@ -1,8 +1,278 @@
-import React, { useState } from 'react';
-import { Card, Button, Select, Switch, Tabs } from '../components/ui';
-import { getSettings, saveSettings, getStoragePaths } from '../lib/storage';
+import React, { useState, useEffect } from 'react';
+import { Card, Button, Select, Switch, Tabs, Input, Spinner, Badge } from '../components/ui';
+import { getSettings, saveSettings, getStoragePaths, getAISettings, saveAISettings } from '../lib/storage';
 import { themeManager } from '../lib/theme';
-import type { ThemeMode } from '../lib/contracts';
+import { aiService, providerRegistry, credentialStore } from '../lib/ai';
+import type { ThemeMode, ProviderConfig, AIModel } from '../lib/contracts';
+
+// Models List Component
+const ModelsList: React.FC = () => {
+  const [models, setModels] = useState<AIModel[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadModels();
+  }, []);
+
+  const loadModels = async () => {
+    setLoading(true);
+    try {
+      const response = await aiService.listModels();
+      if (response.success && response.data) {
+        setModels(response.data);
+      }
+    } catch (error) {
+      console.error('Failed to load models:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <Card className="p-5">
+        <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
+          <Spinner size="sm" />
+          Loading models...
+        </div>
+      </Card>
+    );
+  }
+
+  if (models.length === 0) {
+    return (
+      <Card className="p-5">
+        <p className="text-sm text-[var(--text-secondary)]">
+          No models available. Please configure your API key in the AI Provider section.
+        </p>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="p-5">
+      <div className="space-y-3">
+        {models.map(model => (
+          <div key={model.id} className="border border-[var(--border-default)] rounded-lg p-3">
+            <div className="flex items-start justify-between mb-2">
+              <div>
+                <h4 className="text-sm font-medium text-[var(--text-primary)]">{model.name}</h4>
+                <p className="text-xs text-[var(--text-tertiary)] font-mono">{model.id}</p>
+              </div>
+              <Badge variant="primary">{model.provider}</Badge>
+            </div>
+            {model.description && (
+              <p className="text-xs text-[var(--text-secondary)] mb-2">{model.description}</p>
+            )}
+            <div className="flex flex-wrap gap-1">
+              {model.capabilities.map(cap => (
+                <Badge
+                  key={cap.capability}
+                  variant={cap.status === 'SUPPORTED' ? 'success' : cap.status === 'UNSUPPORTED' ? 'default' : 'warning'}
+                >
+                  {cap.capability}: {cap.status}
+                </Badge>
+              ))}
+            </div>
+            {model.contextWindow && (
+              <p className="text-xs text-[var(--text-tertiary)] mt-2">
+                Context: {model.contextWindow.toLocaleString()} tokens
+              </p>
+            )}
+          </div>
+        ))}
+      </div>
+    </Card>
+  );
+};
+
+// AI Provider Settings Component
+const AIProviderSettings: React.FC = () => {
+  const [aiSettings, setAISettings] = useState<ProviderConfig>(getAISettings());
+  const [apiKey, setApiKey] = useState('');
+  const [maskedKey, setMaskedKey] = useState<string | null>(null);
+  const [testing, setTesting] = useState(false);
+  const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [models, setModels] = useState<AIModel[]>([]);
+  const [loadingModels, setLoadingModels] = useState(false);
+
+  useEffect(() => {
+    loadMaskedKey();
+    loadModels();
+  }, []);
+
+  const loadMaskedKey = async () => {
+    const masked = await credentialStore.getMaskedCredential('openrouter', 'api_key');
+    setMaskedKey(masked);
+  };
+
+  const loadModels = async () => {
+    setLoadingModels(true);
+    try {
+      const response = await aiService.listModels();
+      if (response.success && response.data) {
+        setModels(response.data);
+      }
+    } catch (error) {
+      console.error('Failed to load models:', error);
+    } finally {
+      setLoadingModels(false);
+    }
+  };
+
+  const handleSaveApiKey = async () => {
+    if (!apiKey.trim()) return;
+    
+    await aiService.setApiKey('openrouter', apiKey.trim());
+    setApiKey('');
+    await loadMaskedKey();
+    setTestResult({ success: true, message: 'API key saved successfully' });
+    
+    // Reload models
+    await loadModels();
+  };
+
+  const handleTestConnection = async () => {
+    setTesting(true);
+    setTestResult(null);
+    
+    try {
+      const result = await aiService.validateApiKey();
+      if (result.valid) {
+        setTestResult({ success: true, message: 'Connection successful! API key is valid.' });
+      } else {
+        setTestResult({ success: false, message: result.error || 'Connection failed' });
+      }
+    } catch (error) {
+      setTestResult({ success: false, message: error instanceof Error ? error.message : 'Connection failed' });
+    } finally {
+      setTesting(false);
+    }
+  };
+
+  const handleModelChange = (field: keyof ProviderConfig, value: string) => {
+    const updated = { ...aiSettings, [field]: value };
+    setAISettings(updated);
+    saveAISettings(updated);
+  };
+
+  const modelOptions = models.map(m => ({ value: m.id, label: m.name }));
+
+  return (
+    <div className="max-w-xl">
+      <h2 className="text-xl font-bold text-[var(--text-primary)] mb-1">AI Provider</h2>
+      <p className="text-sm text-[var(--text-secondary)] mb-6">Configure your AI service provider and API credentials.</p>
+
+      <div className="space-y-6">
+        {/* Provider Selection */}
+        <Card className="p-5">
+          <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-3">Provider</h3>
+          <Select
+            label="AI Provider"
+            options={[
+              { value: 'openrouter', label: 'OpenRouter' },
+              { value: 'mock', label: 'Mock (Development)' },
+            ]}
+            value={aiSettings.provider}
+            onChange={e => handleModelChange('provider', e.target.value)}
+          />
+        </Card>
+
+        {/* API Key */}
+        <Card className="p-5">
+          <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-3">API Key</h3>
+          
+          {maskedKey && (
+            <div className="mb-3">
+              <p className="text-xs text-[var(--text-tertiary)] mb-1">Current key:</p>
+              <p className="text-sm font-mono text-[var(--text-secondary)] bg-[var(--bg-hover)] px-3 py-2 rounded">
+                {maskedKey}
+              </p>
+            </div>
+          )}
+
+          <div className="space-y-3">
+            <Input
+              type="password"
+              label={maskedKey ? 'Update API Key' : 'Enter API Key'}
+              placeholder="sk-or-..."
+              value={apiKey}
+              onChange={e => setApiKey(e.target.value)}
+            />
+            
+            <div className="flex gap-2">
+              <Button onClick={handleSaveApiKey} disabled={!apiKey.trim()}>
+                Save Key
+              </Button>
+              <Button variant="secondary" onClick={handleTestConnection} disabled={testing}>
+                {testing ? <Spinner size="sm" /> : 'Test Connection'}
+              </Button>
+            </div>
+
+            {testResult && (
+              <div className={`text-sm px-3 py-2 rounded ${testResult.success ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'}`}>
+                {testResult.message}
+              </div>
+            )}
+
+            <p className="text-xs text-[var(--text-tertiary)]">
+              Your API key is stored securely and never exposed to the frontend or stored in project files.
+            </p>
+          </div>
+        </Card>
+
+        {/* Model Selection */}
+        <Card className="p-5">
+          <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-3">Models</h3>
+          
+          {loadingModels ? (
+            <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
+              <Spinner size="sm" />
+              Loading models...
+            </div>
+          ) : models.length === 0 ? (
+            <p className="text-sm text-[var(--text-secondary)]">
+              No models available. Please configure your API key first.
+            </p>
+          ) : (
+            <div className="space-y-4">
+              <Select
+                label="Default Model"
+                options={modelOptions}
+                value={aiSettings.defaultModel || ''}
+                onChange={e => handleModelChange('defaultModel', e.target.value)}
+              />
+              <Select
+                label="Text Model"
+                options={modelOptions}
+                value={aiSettings.textModel || aiSettings.defaultModel || ''}
+                onChange={e => handleModelChange('textModel', e.target.value)}
+              />
+              <Select
+                label="Vision Model"
+                options={models.filter(m => m.capabilities.some((c: any) => c.capability === 'VISION' && c.status === 'SUPPORTED')).map(m => ({ value: m.id, label: m.name }))}
+                value={aiSettings.visionModel || ''}
+                onChange={e => handleModelChange('visionModel', e.target.value)}
+              />
+              <Select
+                label="Image Generation Model"
+                options={models.filter(m => m.capabilities.some((c: any) => c.capability === 'IMAGE_GENERATION' && c.status === 'SUPPORTED')).map(m => ({ value: m.id, label: m.name }))}
+                value={aiSettings.imageModel || ''}
+                onChange={e => handleModelChange('imageModel', e.target.value)}
+              />
+              <Select
+                label="Image Editing Model"
+                options={models.filter(m => m.capabilities.some((c: any) => c.capability === 'IMAGE_EDITING' && c.status === 'SUPPORTED')).map(m => ({ value: m.id, label: m.name }))}
+                value={aiSettings.imageEditModel || ''}
+                onChange={e => handleModelChange('imageEditModel', e.target.value)}
+              />
+            </div>
+          )}
+        </Card>
+      </div>
+    </div>
+  );
+};
 
 export const Settings: React.FC = () => {
   const [settings, setSettings] = useState(getSettings());
@@ -160,29 +430,14 @@ export const Settings: React.FC = () => {
         )}
 
         {activeSection === 'ai-provider' && (
-          <div className="max-w-xl">
-            <h2 className="text-xl font-bold text-[var(--text-primary)] mb-1">AI Provider</h2>
-            <p className="text-sm text-[var(--text-secondary)] mb-6">Configure AI service providers.</p>
-            <Card className="p-5">
-              <div className="text-center py-8">
-                <svg className="w-10 h-10 text-[var(--text-tertiary)] mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
-                </svg>
-                <p className="text-sm text-[var(--text-secondary)]">AI provider configuration will be implemented in Task 2.</p>
-              </div>
-            </Card>
-          </div>
+          <AIProviderSettings />
         )}
 
         {activeSection === 'models' && (
           <div className="max-w-xl">
             <h2 className="text-xl font-bold text-[var(--text-primary)] mb-1">Models</h2>
-            <p className="text-sm text-[var(--text-secondary)] mb-6">Manage AI model configurations.</p>
-            <Card className="p-5">
-              <div className="text-center py-8">
-                <p className="text-sm text-[var(--text-secondary)]">Model configuration will be implemented in Task 2.</p>
-              </div>
-            </Card>
+            <p className="text-sm text-[var(--text-secondary)] mb-6">View available AI models and their capabilities.</p>
+            <ModelsList />
           </div>
         )}
 
