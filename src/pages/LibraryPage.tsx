@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, Button, Input, EmptyState, Dialog, IconButton, Badge, Tabs } from '../components/ui';
 import { libraryService } from '../lib/library';
 import type { LibraryItemExtended, LibraryItemType } from '../lib/contracts';
 
 export const LibraryPage: React.FC = () => {
+  const { t } = useTranslation();
   const [items, setItems] = useState<LibraryItemExtended[]>([]);
   const [activeTab, setActiveTab] = useState<LibraryItemType>('model');
   const [search, setSearch] = useState('');
@@ -75,7 +77,7 @@ export const LibraryPage: React.FC = () => {
   };
 
   const handleDelete = (id: string) => {
-    if (confirm('Are you sure you want to delete this item?')) {
+    if (confirm(t('library.deleteConfirm'))) {
       libraryService.delete(id);
       loadItems();
     }
@@ -87,25 +89,27 @@ export const LibraryPage: React.FC = () => {
   };
 
   const tabs = [
-    { id: 'model' as LibraryItemType, label: 'Models' },
-    { id: 'environment' as LibraryItemType, label: 'Environments' },
-    { id: 'design_reference' as LibraryItemType, label: 'Design References' },
-    { id: 'style' as LibraryItemType, label: 'Styles' },
-    { id: 'template' as LibraryItemType, label: 'Templates' },
+    { id: 'model' as LibraryItemType, label: t('library.models') },
+    { id: 'environment' as LibraryItemType, label: t('library.environments') },
+    { id: 'design_reference' as LibraryItemType, label: t('library.designReferences') },
+    { id: 'style' as LibraryItemType, label: t('library.styles') },
+    { id: 'template' as LibraryItemType, label: t('library.templates') },
   ];
 
   return (
     <div className="p-6 overflow-y-auto h-full">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-xl font-bold text-[var(--text-primary)]">Library</h2>
-          <p className="text-sm text-[var(--text-secondary)]">{items.length} item{items.length !== 1 ? 's' : ''}</p>
+          <h2 className="text-xl font-bold text-[var(--text-primary)]">{t('library.title')}</h2>
+          <p className="text-sm text-[var(--text-secondary)]">
+            {t('library.itemCount', { count: items.length })}
+          </p>
         </div>
         <Button onClick={handleCreate}>
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.5v15m7.5-7.5h-15" />
           </svg>
-          Add Item
+          {t('library.addItem')}
         </Button>
       </div>
 
@@ -117,7 +121,7 @@ export const LibraryPage: React.FC = () => {
       {/* Search */}
       <div className="mb-6">
         <Input
-          placeholder="Search..."
+          placeholder={t('library.searchPlaceholder')}
           value={search}
           onChange={e => handleSearch(e.target.value)}
         />
@@ -131,9 +135,9 @@ export const LibraryPage: React.FC = () => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z" />
             </svg>
           }
-          title="No items yet"
-          description="Add items to your library to organize your creative assets."
-          action={<Button onClick={handleCreate}>Add Item</Button>}
+          title={t('library.noItemsYet')}
+          description={t('library.addItemsDescription')}
+          action={<Button onClick={handleCreate}>{t('library.addItem')}</Button>}
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -196,33 +200,33 @@ export const LibraryPage: React.FC = () => {
       <Dialog
         open={createDialog}
         onClose={() => setCreateDialog(false)}
-        title={editingItem ? 'Edit Item' : 'Add Item'}
+        title={editingItem ? t('library.editItem') : t('library.addItem')}
         footer={
           <>
-            <Button variant="ghost" onClick={() => setCreateDialog(false)}>Cancel</Button>
-            <Button onClick={handleSave} disabled={!formData.name.trim()}>Save</Button>
+            <Button variant="ghost" onClick={() => setCreateDialog(false)}>{t('common.cancel')}</Button>
+            <Button onClick={handleSave} disabled={!formData.name.trim()}>{t('common.save')}</Button>
           </>
         }
       >
         <div className="space-y-4">
           <Input
-            label="Name"
+            label={t('library.name')}
             value={formData.name}
             onChange={e => setFormData({ ...formData, name: e.target.value })}
             autoFocus
           />
           <Input
-            label="Description"
+            label={t('library.description')}
             value={formData.description}
             onChange={e => setFormData({ ...formData, description: e.target.value })}
           />
           <Input
-            label="Tags (comma-separated)"
+            label={t('library.tags')}
             value={formData.tags}
             onChange={e => setFormData({ ...formData, tags: e.target.value })}
           />
           <Input
-            label="Image URL"
+            label={t('library.imageUrl')}
             value={formData.imagePath}
             onChange={e => setFormData({ ...formData, imagePath: e.target.value })}
           />

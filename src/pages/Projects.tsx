@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, Button, Input, EmptyState, Dialog, IconButton, Badge } from '../components/ui';
 import { getProjects, deleteProject } from '../lib/storage';
 import { createNewProject, renameProject, duplicateProject, toggleFavorite, archiveProject, unarchiveProject } from '../lib/utils';
@@ -11,6 +12,7 @@ interface ProjectsProps {
 }
 
 export const Projects: React.FC<ProjectsProps> = ({ onOpenProject, onCreateProject }) => {
+  const { t } = useTranslation();
   const [projects, setProjects] = useState<Project[]>(getProjects());
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState<'updated' | 'created' | 'name'>('updated');
@@ -85,14 +87,16 @@ export const Projects: React.FC<ProjectsProps> = ({ onOpenProject, onCreateProje
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-xl font-bold text-[var(--text-primary)]">Projects</h2>
-          <p className="text-sm text-[var(--text-secondary)]">{filtered.length} project{filtered.length !== 1 ? 's' : ''}</p>
+          <h2 className="text-xl font-bold text-[var(--text-primary)]">{t('projects.title')}</h2>
+          <p className="text-sm text-[var(--text-secondary)]">
+            {t('projects.projectCount', { count: filtered.length })}
+          </p>
         </div>
         <Button onClick={onCreateProject}>
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.5v15m7.5-7.5h-15" />
           </svg>
-          New Project
+          {t('projects.newProject')}
         </Button>
       </div>
 
@@ -100,7 +104,7 @@ export const Projects: React.FC<ProjectsProps> = ({ onOpenProject, onCreateProje
       <div className="flex items-center gap-3 mb-6">
         <div className="flex-1 max-w-xs">
           <Input
-            placeholder="Search projects..."
+            placeholder={t('projects.searchPlaceholder')}
             value={search}
             onChange={e => setSearch(e.target.value)}
           />
@@ -114,7 +118,7 @@ export const Projects: React.FC<ProjectsProps> = ({ onOpenProject, onCreateProje
                 ${filter === f ? 'bg-[var(--bg-card)] text-[var(--text-primary)] shadow-sm' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}
               `}
             >
-              {f}
+              {t(`projects.${f}`)}
             </button>
           ))}
         </div>
@@ -123,9 +127,9 @@ export const Projects: React.FC<ProjectsProps> = ({ onOpenProject, onCreateProje
           onChange={e => setSortBy(e.target.value as typeof sortBy)}
           className="px-3 py-1.5 text-xs rounded-lg border border-[var(--border-default)] bg-[var(--bg-input)] text-[var(--text-primary)] outline-none"
         >
-          <option value="updated">Last Updated</option>
-          <option value="created">Date Created</option>
-          <option value="name">Name</option>
+          <option value="updated">{t('projects.lastUpdated')}</option>
+          <option value="created">{t('projects.dateCreated')}</option>
+          <option value="name">{t('projects.name')}</option>
         </select>
       </div>
 
@@ -137,9 +141,9 @@ export const Projects: React.FC<ProjectsProps> = ({ onOpenProject, onCreateProje
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" />
             </svg>
           }
-          title={search ? 'No matching projects' : 'No projects yet'}
-          description={search ? 'Try a different search term.' : 'Create your first project to start generating AI product content.'}
-          action={!search && <Button onClick={onCreateProject}>Create Project</Button>}
+          title={search ? t('projects.noMatchingProjects') : t('projects.noProjectsYet')}
+          description={search ? t('projects.tryDifferentSearch') : t('projects.createFirstProject')}
+          action={!search && <Button onClick={onCreateProject}>{t('projects.createProject')}</Button>}
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -158,7 +162,7 @@ export const Projects: React.FC<ProjectsProps> = ({ onOpenProject, onCreateProje
                 )}
                 {project.archived && (
                   <div className="absolute top-2 left-2">
-                    <Badge variant="warning">Archived</Badge>
+                    <Badge variant="warning">{t('projects.archivedBadge')}</Badge>
                   </div>
                 )}
                 {/* Actions overlay */}
@@ -214,16 +218,16 @@ export const Projects: React.FC<ProjectsProps> = ({ onOpenProject, onCreateProje
       <Dialog
         open={!!deleteDialog}
         onClose={() => setDeleteDialog(null)}
-        title="Delete Project"
+        title={t('projects.deleteProject')}
         footer={
           <>
-            <Button variant="ghost" onClick={() => setDeleteDialog(null)}>Cancel</Button>
-            <Button variant="danger" onClick={() => deleteDialog && handleDelete(deleteDialog)}>Delete</Button>
+            <Button variant="ghost" onClick={() => setDeleteDialog(null)}>{t('common.cancel')}</Button>
+            <Button variant="danger" onClick={() => deleteDialog && handleDelete(deleteDialog)}>{t('common.delete')}</Button>
           </>
         }
       >
         <p className="text-sm text-[var(--text-secondary)]">
-          Are you sure you want to delete this project? This action cannot be undone.
+          {t('projects.deleteConfirm')}
         </p>
       </Dialog>
 
@@ -231,16 +235,16 @@ export const Projects: React.FC<ProjectsProps> = ({ onOpenProject, onCreateProje
       <Dialog
         open={!!renameDialog}
         onClose={() => setRenameDialog(null)}
-        title="Rename Project"
+        title={t('projects.renameProject')}
         footer={
           <>
-            <Button variant="ghost" onClick={() => setRenameDialog(null)}>Cancel</Button>
-            <Button onClick={handleRename}>Rename</Button>
+            <Button variant="ghost" onClick={() => setRenameDialog(null)}>{t('common.cancel')}</Button>
+            <Button onClick={handleRename}>{t('common.rename')}</Button>
           </>
         }
       >
         <Input
-          label="Project name"
+          label={t('projects.projectName')}
           value={renameValue}
           onChange={e => setRenameValue(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && handleRename()}

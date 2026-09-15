@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Dialog, Button, Input, Textarea } from '../components/ui';
 import { createNewProject } from '../lib/utils';
 import type { Project } from '../lib/contracts';
@@ -10,13 +11,14 @@ interface CreateProjectDialogProps {
 }
 
 export const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({ open, onClose, onCreated }) => {
+  const { t } = useTranslation();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [error, setError] = useState('');
 
   const handleCreate = () => {
     if (!name.trim()) {
-      setError('Project name is required');
+      setError(t('createProject.projectNameRequired'));
       return;
     }
     const project = createNewProject(name.trim(), description.trim());
@@ -37,18 +39,18 @@ export const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({ open, 
     <Dialog
       open={open}
       onClose={handleClose}
-      title="Create New Project"
+      title={t('createProject.createNewProject')}
       footer={
         <>
-          <Button variant="ghost" onClick={handleClose}>Cancel</Button>
-          <Button onClick={handleCreate}>Create Project</Button>
+          <Button variant="ghost" onClick={handleClose}>{t('common.cancel')}</Button>
+          <Button onClick={handleCreate}>{t('createProject.createProject')}</Button>
         </>
       }
     >
       <div className="space-y-4">
         <Input
-          label="Project name"
-          placeholder="e.g., Summer Collection 2024"
+          label={t('createProject.projectName')}
+          placeholder={t('createProject.projectNamePlaceholder')}
           value={name}
           onChange={e => { setName(e.target.value); setError(''); }}
           onKeyDown={e => e.key === 'Enter' && handleCreate()}
@@ -56,8 +58,8 @@ export const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({ open, 
           autoFocus
         />
         <Textarea
-          label="Description (optional)"
-          placeholder="Brief description of the project..."
+          label={t('createProject.description')}
+          placeholder={t('createProject.descriptionPlaceholder')}
           value={description}
           onChange={e => setDescription(e.target.value)}
         />

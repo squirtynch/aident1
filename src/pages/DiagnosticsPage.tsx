@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, Button, Badge, Spinner } from '../components/ui';
 import { diagnosticsService, type DiagnosticReport } from '../lib/diagnostics';
 
 export const DiagnosticsPage: React.FC = () => {
+  const { t } = useTranslation();
   const [running, setRunning] = useState(false);
   const [report, setReport] = useState<DiagnosticReport | null>(null);
 
@@ -40,16 +42,16 @@ export const DiagnosticsPage: React.FC = () => {
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-xl font-bold text-[var(--text-primary)]">System Diagnostics</h2>
-            <p className="text-sm text-[var(--text-secondary)]">Check system health and configuration</p>
+            <h2 className="text-xl font-bold text-[var(--text-primary)]">{t('settings.systemDiagnostics')}</h2>
+            <p className="text-sm text-[var(--text-secondary)]">{t('settings.checkSystemHealth')}</p>
           </div>
           <div className="flex gap-2">
             <Button onClick={handleRunDiagnostics} disabled={running}>
-              {running ? <Spinner size="sm" /> : 'Run Diagnostics'}
+              {running ? <Spinner size="sm" /> : t('settings.runDiagnostics')}
             </Button>
             {report && (
               <Button variant="secondary" onClick={handleCopyReport}>
-                Copy Report
+                {t('settings.copyReport')}
               </Button>
             )}
           </div>
@@ -59,7 +61,7 @@ export const DiagnosticsPage: React.FC = () => {
           <Card className="p-8">
             <div className="text-center">
               <Spinner size="lg" className="mx-auto mb-4" />
-              <p className="text-[var(--text-secondary)]">Running diagnostics...</p>
+              <p className="text-[var(--text-secondary)]">{t('settings.runningDiagnostics')}</p>
             </div>
           </Card>
         )}
@@ -69,24 +71,24 @@ export const DiagnosticsPage: React.FC = () => {
             {/* Summary */}
             <Card className="p-4">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-semibold text-[var(--text-primary)]">Summary</h3>
+                <h3 className="text-sm font-semibold text-[var(--text-primary)]">{t('settings.summary')}</h3>
                 <div className="flex gap-2">
-                  <Badge variant="success">{report.summary.passed} passed</Badge>
-                  <Badge variant="warning">{report.summary.warnings} warnings</Badge>
-                  <Badge variant="danger">{report.summary.errors} errors</Badge>
+                  <Badge variant="success">{report.summary.passed} {t('settings.passed')}</Badge>
+                  <Badge variant="warning">{report.summary.warnings} {t('settings.warnings')}</Badge>
+                  <Badge variant="danger">{report.summary.errors} {t('settings.errors')}</Badge>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <span className="text-[var(--text-secondary)]">Version:</span>{' '}
+                  <span className="text-[var(--text-secondary)]">{t('settings.version')}:</span>{' '}
                   <span className="text-[var(--text-primary)] font-mono">{report.version}</span>
                 </div>
                 <div>
-                  <span className="text-[var(--text-secondary)]">Platform:</span>{' '}
+                  <span className="text-[var(--text-secondary)]">{t('settings.platform')}:</span>{' '}
                   <span className="text-[var(--text-primary)]">{report.platform}</span>
                 </div>
                 <div>
-                  <span className="text-[var(--text-secondary)]">Timestamp:</span>{' '}
+                  <span className="text-[var(--text-secondary)]">{t('settings.timestamp')}:</span>{' '}
                   <span className="text-[var(--text-primary)] font-mono text-xs">
                     {new Date(report.timestamp).toLocaleString()}
                   </span>
@@ -96,7 +98,7 @@ export const DiagnosticsPage: React.FC = () => {
 
             {/* Checks */}
             <Card className="p-4">
-              <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-4">Detailed Results</h3>
+              <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-4">{t('settings.detailedResults')}</h3>
               <div className="space-y-3">
                 {report.checks.map((check, index) => (
                   <div
@@ -121,7 +123,7 @@ export const DiagnosticsPage: React.FC = () => {
                       {check.details && (
                         <details className="mt-2">
                           <summary className="text-xs text-[var(--text-tertiary)] cursor-pointer hover:text-[var(--text-secondary)]">
-                            Details
+                            {t('settings.details')}
                           </summary>
                           <pre className="mt-2 text-xs bg-[var(--bg-hover)] p-2 rounded overflow-x-auto">
                             {JSON.stringify(check.details, null, 2)}
@@ -143,17 +145,17 @@ export const DiagnosticsPage: React.FC = () => {
                 <div>
                   <h3 className="text-sm font-semibold text-[var(--text-primary)]">
                     {report.summary.errors > 0
-                      ? 'System has errors'
+                      ? t('settings.systemHasErrors')
                       : report.summary.warnings > 0
-                      ? 'System has warnings'
-                      : 'System is healthy'}
+                      ? t('settings.systemHasWarnings')
+                      : t('settings.systemIsHealthy')}
                   </h3>
                   <p className="text-xs text-[var(--text-secondary)]">
                     {report.summary.errors > 0
-                      ? 'Please address the errors above to ensure proper functionality.'
+                      ? t('settings.addressErrors')
                       : report.summary.warnings > 0
-                      ? 'Some checks have warnings. Review them for optimal performance.'
-                      : 'All checks passed. Your system is ready to use.'}
+                      ? t('settings.reviewWarnings')
+                      : t('settings.allChecksPassed')}
                   </p>
                 </div>
               </div>
@@ -178,7 +180,7 @@ export const DiagnosticsPage: React.FC = () => {
                 />
               </svg>
               <p className="text-[var(--text-secondary)]">
-                Click "Run Diagnostics" to check your system health and configuration.
+                {t('settings.clickToCheck')}
               </p>
             </div>
           </Card>

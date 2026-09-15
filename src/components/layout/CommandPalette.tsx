@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { commandRegistry } from '../../lib/commands';
 
 interface CommandPaletteProps {
@@ -7,6 +8,7 @@ interface CommandPaletteProps {
 }
 
 export const CommandPalette: React.FC<CommandPaletteProps> = ({ open, onClose }) => {
+  const { t } = useTranslation();
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -83,7 +85,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ open, onClose })
             value={query}
             onChange={e => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Type a command..."
+            placeholder={t('commandPalette.typeCommand')}
             className="flex-1 bg-transparent text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] outline-none"
           />
           <kbd className="text-xs text-[var(--text-tertiary)] bg-[var(--bg-hover)] px-1.5 py-0.5 rounded">ESC</kbd>
@@ -93,7 +95,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ open, onClose })
         <div className="max-h-80 overflow-y-auto py-2">
           {filtered.length === 0 ? (
             <div className="px-4 py-8 text-center text-sm text-[var(--text-tertiary)]">
-              No commands found
+              {t('commandPalette.noCommandsFound')}
             </div>
           ) : (
             Object.entries(grouped).map(([category, cmds]) => (
@@ -131,9 +133,9 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ open, onClose })
 
         {/* Footer */}
         <div className="flex items-center gap-4 px-4 py-2 border-t border-[var(--border-default)] text-xs text-[var(--text-tertiary)]">
-          <span>↑↓ Navigate</span>
-          <span>↵ Execute</span>
-          <span>ESC Close</span>
+          <span>↑↓ {t('commandPalette.navigate')}</span>
+          <span>↵ {t('commandPalette.execute')}</span>
+          <span>ESC {t('commandPalette.close')}</span>
         </div>
       </div>
     </div>
