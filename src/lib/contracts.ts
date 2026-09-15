@@ -228,3 +228,234 @@ export interface ProviderConfig {
   imageEditModel?: string;
   videoModel?: string;
 }
+
+// Library Types
+export type LibraryItemType = 'model' | 'environment' | 'design_reference' | 'style' | 'template';
+
+export interface LibraryItemExtended {
+  id: string;
+  type: LibraryItemType;
+  name: string;
+  description?: string;
+  imagePath?: string;
+  thumbnailPath?: string;
+  tags: string[];
+  favorite: boolean;
+  metadata?: Record<string, any>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Style System
+export interface Style {
+  id: string;
+  name: string;
+  description?: string;
+  references: string[]; // image paths
+  visualDescription: string;
+  colors: string[];
+  typographyHints?: string;
+  layoutHints?: string;
+  aiInstructions: string;
+  favorite: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Model Reference (Person)
+export interface ModelReference {
+  id: string;
+  name: string;
+  description?: string;
+  imagePath: string;
+  thumbnailPath: string;
+  tags: string[];
+  metadata?: {
+    gender?: string;
+    age?: string;
+    ethnicity?: string;
+    bodyType?: string;
+  };
+  favorite: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Environment Reference
+export interface EnvironmentReference {
+  id: string;
+  name: string;
+  category: 'studio' | 'room' | 'office' | 'kitchen' | 'bathroom' | 'street' | 'nature' | 'luxury' | 'other';
+  description?: string;
+  imagePath: string;
+  thumbnailPath: string;
+  tags: string[];
+  favorite: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Design Reference
+export type DesignReferenceMode = 'COPY' | 'INSPIRED';
+
+export interface DesignReference {
+  id: string;
+  name: string;
+  description?: string;
+  imagePath: string;
+  thumbnailPath: string;
+  mode: DesignReferenceMode;
+  tags: string[];
+  favorite: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Try-On Request
+export interface TryOnRequest {
+  projectId: string;
+  productAssetId: string;
+  modelReferenceId: string;
+  pose?: string;
+  framing?: string;
+  environmentId?: string;
+  styleId?: string;
+  model?: string;
+}
+
+// Lifestyle Request
+export interface LifestyleRequest {
+  projectId: string;
+  productAssetId: string;
+  environmentId: string;
+  mood?: string;
+  composition?: string;
+  styleId?: string;
+  references?: string[];
+  model?: string;
+}
+
+// Advertising Request
+export type AdObjective = 'sale' | 'launch' | 'brand_awareness' | 'feature_highlight' | 'premium' | 'social_ad' | 'marketplace';
+
+export interface AdvertisingRequest {
+  projectId: string;
+  productAssetId: string;
+  objective: AdObjective;
+  format?: string;
+  styleId?: string;
+  copy?: string;
+  references?: string[];
+  model?: string;
+}
+
+// Product Card Types
+export type CardType = 'main' | 'features' | 'benefits' | 'specifications' | 'usage' | 'comparison' | 'infographic';
+
+export interface ProductCardRequest {
+  projectId: string;
+  productAssetId: string;
+  cardType: CardType;
+  styleId?: string;
+  references?: string[];
+  model?: string;
+}
+
+// Card Funnel
+export interface CardFunnelPlan {
+  projectId: string;
+  productAssetId: string;
+  cards: {
+    type: CardType;
+    enabled: boolean;
+    styleId?: string;
+  }[];
+  styleId?: string;
+}
+
+// Replace Product
+export type ReplaceMode = 'COPY' | 'ADAPT' | 'CONCEPT';
+
+export interface ReplaceProductRequest {
+  projectId: string;
+  referenceDesignId: string;
+  newProductAssetId: string;
+  mode: ReplaceMode;
+  styleId?: string;
+  model?: string;
+}
+
+// Batch
+export interface BatchJob {
+  id: string;
+  name: string;
+  type: 'image_generation' | 'try_on' | 'lifestyle' | 'advertising' | 'product_card';
+  items: BatchItem[];
+  status: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled';
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BatchItem {
+  id: string;
+  batchId: string;
+  input: any;
+  status: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled';
+  resultId?: string;
+  error?: string;
+}
+
+// Video
+export interface VideoRequest {
+  projectId: string;
+  productAssetId?: string;
+  startingImageId?: string;
+  style?: string;
+  scene?: string;
+  duration: 5 | 10;
+  aspectRatio?: string;
+  prompt: string;
+  model?: string;
+}
+
+// AI Scenario
+export interface ScenarioScene {
+  id: string;
+  description: string;
+  type: 'image' | 'video' | 'text';
+  parameters: Record<string, any>;
+}
+
+export interface ScenarioPlan {
+  id: string;
+  projectId: string;
+  name: string;
+  description: string;
+  scenes: ScenarioScene[];
+  status: 'draft' | 'approved' | 'processing' | 'completed';
+  createdAt: string;
+}
+
+// Editor
+export interface EditorDocument {
+  id: string;
+  projectId: string;
+  name: string;
+  width: number;
+  height: number;
+  layers: EditorLayer[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface EditorLayer {
+  id: string;
+  type: 'image' | 'text' | 'shape' | 'arrow';
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  rotation: number;
+  opacity: number;
+  data: Record<string, any>;
+}

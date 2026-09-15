@@ -3,17 +3,34 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Button, Badge, Spinner } from '../components/ui';
 import { runTests } from '../tests/ai-engine.test';
+import { runCreativeTests } from '../tests/creative-studio.test';
 
 export const TestRunnerPage: React.FC = () => {
   const [running, setRunning] = useState(false);
   const [results, setResults] = useState<{ passed: number; failed: number; errors: string[] } | null>(null);
+  const [testSuite, setTestSuite] = useState<'ai-engine' | 'creative-studio' | 'all'>('all');
 
   const handleRunTests = async () => {
     setRunning(true);
     setResults(null);
     
     try {
-      const testResults = await runTests();
+      let testResults = { passed: 0, failed: 0, errors: [] as string[] };
+      
+      if (testSuite === 'ai-engine' || testSuite === 'all') {
+        const aiResults = await runTests();
+        testResults.passed += aiResults.passed;
+        testResults.failed += aiResults.failed;
+        testResults.errors.push(...aiResults.errors);
+      }
+      
+      if (testSuite === 'creative-studio' || testSuite === 'all') {
+        const creativeResults = await runCreativeTests();
+        testResults.passed += creativeResults.passed;
+        testResults.failed += creativeResults.failed;
+        testResults.errors.push(...creativeResults.errors);
+      }
+      
       setResults(testResults);
     } catch (error) {
       setResults({
@@ -31,12 +48,23 @@ export const TestRunnerPage: React.FC = () => {
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-xl font-bold text-[var(--text-primary)]">AI Engine Tests</h2>
-            <p className="text-sm text-[var(--text-secondary)]">Run the test suite for the AI engine components.</p>
+            <h2 className="text-xl font-bold text-[var(--text-primary)]">Test Suite</h2>
+            <p className="text-sm text-[var(--text-secondary)]">Run tests for AI Product Studio components.</p>
           </div>
-          <Button onClick={handleRunTests} disabled={running}>
-            {running ? <Spinner size="sm" /> : 'Run Tests'}
-          </Button>
+          <div className="flex items-center gap-3">
+            <select
+              value={testSuite}
+              onChange={e => setTestSuite(e.target.value as any)}
+              className="px-3 py-2 text-sm rounded-lg border border-[var(--border-default)] bg-[var(--bg-input)] text-[var(--text-primary)] outline-none"
+            >
+              <option value="all">All Tests</option>
+              <option value="ai-engine">AI Engine</option>
+              <option value="creative-studio">Creative Studio</option>
+            </select>
+            <Button onClick={handleRunTests} disabled={running}>
+              {running ? <Spinner size="sm" /> : 'Run Tests'}
+            </Button>
+          </div>
         </div>
 
         {results && (
