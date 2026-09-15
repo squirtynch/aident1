@@ -1,5 +1,81 @@
+# Dependencies
 node_modules/
-.next/
+.pnp
+.pnp.js
+
+# Testing
+coverage/
+
+# Production
 dist/
 build/
+
+# Environment variables
+.env
+.env.local
+.env.production
+*.local
+
+# Tauri
+src-tauri/target/
+src-tauri/WixTools/
+
+# Rust
+*.pdb
+*.dll
+*.exe
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+logs/
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Build artifacts
+*.tsbuildinfo
+
+# Python (if added later)
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Credentials (NEVER commit secrets)
+credentials.json
+secrets.json
+*.key
+*.pem
+
+# Generated icons (will be regenerated during build)
+src-tauri/icons/*.png
+src-tauri/icons/*.ico
+src-tauri/icons/*.icns
+!src-tauri/icons/README.md
+.next/

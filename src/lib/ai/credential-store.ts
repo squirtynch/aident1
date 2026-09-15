@@ -1,19 +1,33 @@
 // Credential Store - Secure API Key Storage
-// In production, this uses Windows Credential Manager through Tauri
-// For now, uses encrypted localStorage as a fallback
+// Uses Windows Credential Manager through Tauri in production
+// Falls back to session-only storage in browser development
+
+import { isTauri, invokeTauriCommand } from '../desktop';
 
 class CredentialStore {
   private readonly STORAGE_PREFIX = 'ai-studio-credentials:';
   
-  // In production (Tauri), this would call into Windows Credential Manager
-  // For web/dev, we use a masked approach in localStorage
-  
   async setCredential(service: string, key: string, value: string): Promise<void> {
-    // In production Tauri app, this would use:
-    // window.__TAURI__.invoke('store_credential', { service, key, value })
+    if (isTauri()) {
+      // Use Windows Credential Manager through Tauri
+      try {
+        await invokeTauriCommand('store_credential', { service, key, value });
+        
+        // Store masked version for display
+        const masked = this.maskKey(value);
+        localStorage.setItem(`${this.STORAGE_PREFIX}${service}:${key}`, JSON.stringify({
+          masked,
+          hasValue: true,
+          lastUpdated: new Date().toISOString(),
+        }));
+        return;
+      } catch (error) {
+        console.error('Failed to store credential in Windows Credential Manager:', error);
+        throw error;
+      }
+    }
     
-    // For development, we store a masked version
-    // The actual key would be in Windows Credential Manager
+    // Browser development fallback - session only
     const masked = this.maskKey(value);
     localStorage.setItem(`${this.STORAGE_PREFIX}${service}:${key}`, JSON.stringify({
       masked,
@@ -27,10 +41,25 @@ class CredentialStore {
   }
 
   async getCredential(service: string, key: string): Promise<string | null> {
-    // In production Tauri app, this would use:
-    // return window.__TAURI__.invoke('get_credential', { service, key })
+    if (isTauri()) {
+      // Use Windows Credential Manager through Tauri
+      try {
+        const response = await invokeTauriCommand<{ success: boolean; value: string | null; error: string | null }>(
+          'get_credential',
+          { service, key }
+        );
+        
+        if (response.success) {
+          return response.value;
+        }
+        return null;
+      } catch (error) {
+        console.error('Failed to get credential from Windows Credential Manager:', error);
+        return null;
+      }
+    }
     
-    // Check session storage first
+    // Browser development fallback
     const sessionCreds = (window as any).__ai_credentials;
     if (sessionCreds && sessionCreds[`${service}:${key}`]) {
       return sessionCreds[`${service}:${key}`];
@@ -40,8 +69,14 @@ class CredentialStore {
   }
 
   async deleteCredential(service: string, key: string): Promise<void> {
-    // In production Tauri app:
-    // window.__TAURI__.invoke('delete_credential', { service, key })
+    if (isTauri()) {
+      // Use Windows Credential Manager through Tauri
+      try {
+        await invokeTauriCommand('delete_credential', { service, key });
+      } catch (error) {
+        console.error('Failed to delete credential from Windows Credential Manager:', error);
+      }
+    }
     
     localStorage.removeItem(`${this.STORAGE_PREFIX}${service}:${key}`);
     
@@ -52,6 +87,25 @@ class CredentialStore {
   }
 
   async hasCredential(service: string, key: string): Promise<boolean> {
+    if (isTauri()) {
+      // Use Windows Credential Manager through Tauri
+      try {
+        const response = await invokeTauriCommand<{ success: boolean; value: string | null; error: string | null }>(
+          'has_credential',
+          { service, key }
+        );
+        
+        if (response.success && response.value) {
+          return response.value === 'true';
+        }
+        return false;
+      } catch (error) {
+        console.error('Failed to check credential in Windows Credential Manager:', error);
+        return false;
+      }
+    }
+    
+    // Browser development fallback
     const stored = localStorage.getItem(`${this.STORAGE_PREFIX}${service}:${key}`);
     if (stored) {
       const parsed = JSON.parse(stored);
