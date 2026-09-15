@@ -1,5 +1,5 @@
 // Script to generate placeholder icons for Tauri build
-// Run this before building: node scripts/generate-icons.js
+// Run this before building: node scripts/generate-icons.cjs
 
 const fs = require('fs');
 const path = require('path');
