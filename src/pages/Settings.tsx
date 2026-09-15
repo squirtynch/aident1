@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, Button, Select, Switch, Tabs, Input, Spinner, Badge } from '../components/ui';
 import { getSettings, saveSettings, getStoragePaths, getAISettings, saveAISettings } from '../lib/storage';
 import { themeManager } from '../lib/theme';
@@ -275,9 +276,17 @@ const AIProviderSettings: React.FC = () => {
 };
 
 export const Settings: React.FC = () => {
+  const { t, i18n } = useTranslation();
   const [settings, setSettings] = useState(getSettings());
   const [activeSection, setActiveSection] = useState('general');
   const storagePaths = getStoragePaths();
+
+  const handleLanguageChange = (language: string) => {
+    i18n.changeLanguage(language);
+    const u = { ...settings, language };
+    setSettings(u);
+    saveSettings(u);
+  };
 
   const handleThemeChange = (mode: ThemeMode) => {
     themeManager.setMode(mode);
@@ -323,14 +332,14 @@ export const Settings: React.FC = () => {
       <div className="flex-1 overflow-y-auto p-6">
         {activeSection === 'general' && (
           <div className="max-w-xl">
-            <h2 className="text-xl font-bold text-[var(--text-primary)] mb-1">General</h2>
-            <p className="text-sm text-[var(--text-secondary)] mb-6">Configure general application settings.</p>
+            <h2 className="text-xl font-bold text-[var(--text-primary)] mb-1">{t('settings.general')}</h2>
+            <p className="text-sm text-[var(--text-secondary)] mb-6">{t('settings.configureGeneral')}</p>
 
             <Card className="p-5 space-y-5">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-[var(--text-primary)]">Auto-save</p>
-                  <p className="text-xs text-[var(--text-secondary)]">Automatically save changes to projects</p>
+                  <p className="text-sm font-medium text-[var(--text-primary)]">{t('settings.autoSave')}</p>
+                  <p className="text-xs text-[var(--text-secondary)]">{t('settings.autoSaveDescription')}</p>
                 </div>
                 <Switch
                   checked={settings.autoSave}
@@ -339,12 +348,15 @@ export const Settings: React.FC = () => {
               </div>
               <div className="border-t border-[var(--border-default)]" />
               <div>
-                <p className="text-sm font-medium text-[var(--text-primary)] mb-1">Language</p>
-                <p className="text-xs text-[var(--text-secondary)] mb-2">Application display language</p>
+                <p className="text-sm font-medium text-[var(--text-primary)] mb-1">{t('settings.language')}</p>
+                <p className="text-xs text-[var(--text-secondary)] mb-2">{t('settings.languageDescription')}</p>
                 <Select
-                  options={[{ value: 'en', label: 'English' }]}
-                  value={settings.language}
-                  onChange={e => { const u = { ...settings, language: e.target.value }; setSettings(u); saveSettings(u); }}
+                  options={[
+                    { value: 'en', label: 'English' },
+                    { value: 'ru', label: 'Русский' }
+                  ]}
+                  value={i18n.language}
+                  onChange={e => handleLanguageChange(e.target.value)}
                 />
               </div>
             </Card>

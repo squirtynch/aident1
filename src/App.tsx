@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Sidebar } from './components/layout/Sidebar';
 import { TopBar } from './components/layout/TopBar';
 import { CommandPalette } from './components/layout/CommandPalette';
@@ -25,6 +26,7 @@ interface ToastState {
 }
 
 function App() {
+  const { t } = useTranslation();
   const [currentPage, setCurrentPage] = useState<PageId>('dashboard');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
@@ -206,17 +208,17 @@ function App() {
 
   // Page titles
   const getPageTitle = () => {
-    if (selectedProjectId) return 'Project';
+    if (selectedProjectId) return t('projectView.project');
     switch (currentPage) {
-      case 'dashboard': return 'Dashboard';
-      case 'create': return 'Create';
-      case 'projects': return 'Projects';
-      case 'library': return 'Library';
-      case 'batch': return 'Batch';
-      case 'history': return 'History';
-      case 'settings': return 'Settings';
-      case 'diagnostics': return 'Diagnostics';
-      default: return 'AI Product Studio';
+      case 'dashboard': return t('navigation.dashboard');
+      case 'create': return t('navigation.create');
+      case 'projects': return t('navigation.projects');
+      case 'library': return t('navigation.library');
+      case 'batch': return t('navigation.batch');
+      case 'history': return t('navigation.history');
+      case 'settings': return t('navigation.settings');
+      case 'diagnostics': return t('navigation.diagnostics');
+      default: return t('common.appName');
     }
   };
 

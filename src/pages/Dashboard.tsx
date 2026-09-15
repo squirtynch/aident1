@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, EmptyState, Button } from '../components/ui';
 import { getProjects } from '../lib/storage';
 import { formatRelativeDate } from '../lib/utils';
@@ -8,6 +9,7 @@ interface DashboardProps {
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
+  const { t } = useTranslation();
   const projects = getProjects();
   const recentProjects = [...projects]
     .filter(p => !p.archived)
@@ -19,13 +21,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
 
   return (
     <div className="p-6 overflow-y-auto h-full">
-      {/* Welcome */}
       <div className="mb-8">
-        <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-1">Welcome to AI Product Studio</h2>
-        <p className="text-[var(--text-secondary)]">Create stunning product content with AI-powered tools.</p>
+        <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-1">{t('dashboard.welcome')}</h2>
+        <p className="text-[var(--text-secondary)]">{t('dashboard.subtitle')}</p>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         <Card className="p-4">
           <div className="flex items-center gap-3">
@@ -36,7 +36,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             </div>
             <div>
               <p className="text-2xl font-bold text-[var(--text-primary)]">{totalProjects}</p>
-              <p className="text-xs text-[var(--text-secondary)]">Total Projects</p>
+              <p className="text-xs text-[var(--text-secondary)]">{t('dashboard.totalProjects')}</p>
             </div>
           </div>
         </Card>
@@ -49,7 +49,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             </div>
             <div>
               <p className="text-2xl font-bold text-[var(--text-primary)]">{favoriteProjects}</p>
-              <p className="text-xs text-[var(--text-secondary)]">Favorites</p>
+              <p className="text-xs text-[var(--text-secondary)]">{t('dashboard.favorites')}</p>
             </div>
           </div>
         </Card>
@@ -62,38 +62,36 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             </div>
             <div>
               <p className="text-2xl font-bold text-[var(--text-primary)]">0</p>
-              <p className="text-xs text-[var(--text-secondary)]">Generations</p>
+              <p className="text-xs text-[var(--text-secondary)]">{t('dashboard.generations')}</p>
             </div>
           </div>
         </Card>
       </div>
 
-      {/* Quick Actions */}
       <div className="mb-8">
-        <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-3">Quick Actions</h3>
+        <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-3">{t('dashboard.quickActions')}</h3>
         <div className="flex gap-3">
           <Button onClick={() => onNavigate('create')}>
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.5v15m7.5-7.5h-15" />
             </svg>
-            New Project
+            {t('dashboard.newProject')}
           </Button>
           <Button variant="secondary" onClick={() => onNavigate('projects')}>
-            Open Projects
+            {t('dashboard.openProjects')}
           </Button>
           <Button variant="secondary" onClick={() => onNavigate('library')}>
-            Open Library
+            {t('dashboard.openLibrary')}
           </Button>
         </div>
       </div>
 
-      {/* Recent Projects */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-lg font-semibold text-[var(--text-primary)]">Recent Projects</h3>
+          <h3 className="text-lg font-semibold text-[var(--text-primary)]">{t('dashboard.recentProjects')}</h3>
           {projects.length > 0 && (
             <button onClick={() => onNavigate('projects')} className="text-sm text-primary-600 hover:text-primary-700 font-medium">
-              View All →
+              {t('dashboard.viewAll')} →
             </button>
           )}
         </div>
@@ -105,9 +103,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" />
               </svg>
             }
-            title="No projects yet"
-            description="Create your first project to get started with AI-powered product content."
-            action={<Button onClick={() => onNavigate('create')}>Create Project</Button>}
+            title={t('dashboard.noProjects')}
+            description={t('dashboard.noProjectsDescription')}
+            action={<Button onClick={() => onNavigate('create')}>{t('dashboard.createProject')}</Button>}
           />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
